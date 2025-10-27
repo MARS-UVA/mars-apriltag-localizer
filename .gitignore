@@ -1046,3 +1046,7 @@ dkms.conf
 
 # JetBrains IDEA configurations
 .idea
+
+# External dependencies (it is on the developer to install these)
+lib
+include
