@@ -19,10 +19,10 @@ include_directories(
 set(CMAKE_CXX_STANDARD 17)
 
 add_library(${PROJECT_NAME}
-        src/marslocalizer/library.cpp
+        src/marslocalizer/main.cpp
 )
 set_target_properties(${PROJECT_NAME} PROPERTIES
-        PUBLIC_HEADER include/marslocalizer/library.hpp
+        PUBLIC_HEADER include/marslocalizer/wrapper.hpp
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
 )
