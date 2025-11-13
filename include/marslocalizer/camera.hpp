@@ -36,7 +36,4 @@ public:
      
 };
 
-
-
-
 #endif // MARSLOCALIZER_CAMERA_HPP
