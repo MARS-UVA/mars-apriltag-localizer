@@ -39,13 +39,13 @@ public:
         _deleter(_family);
     }
 
-    std::string_view name() const;
-    int width_at_border() const;
-    int total_width() const;
-    std::uint32_t minimum_hamming_distance() const;
+    [[nodiscard]] std::string_view name() const;
+    [[nodiscard]] int width_at_border() const;
+    [[nodiscard]] int total_width() const;
+    [[nodiscard]] std::uint32_t minimum_hamming_distance() const;
 
-    const apriltag_family_t *raw() const;
-    apriltag_family_t *raw();
+    [[nodiscard]] const apriltag_family_t *raw() const;
+    [[nodiscard]] apriltag_family_t *raw();
 
 private:
 
@@ -59,9 +59,9 @@ public:
     explicit AprilTagDetection(apriltag_detection_t *detection) : _detection(detection) {
     }
 
-    int id() const;
-    Eigen::Vector2d center() const;
-    std::array<Eigen::Vector2d, 4> corners() const;
+    [[nodiscard]] int id() const;
+    [[nodiscard]] Eigen::Vector2d center() const;
+    [[nodiscard]] std::array<Eigen::Vector2d, 4> corners() const;
 
 private:
 
@@ -76,23 +76,23 @@ public:
         : _detector(apriltag_detector_create()) {
     }
 
-    const int &nthreads() const;
-    int &nthreads();
+    [[nodiscard]] const int &nthreads() const;
+    [[nodiscard]] int &nthreads();
 
-    const float &quad_decimate() const;
-    float &quad_decimate();
+    [[nodiscard]] const float &quad_decimate() const;
+    [[nodiscard]] float &quad_decimate();
 
-    const float &quad_sigma() const;
-    float &quad_sigma();
+    [[nodiscard]] const float &quad_sigma() const;
+    [[nodiscard]] float &quad_sigma();
 
-    const bool &refine_edges() const;
-    bool &refine_edges();
+    [[nodiscard]] const bool &refine_edges() const;
+    [[nodiscard]] bool &refine_edges();
 
-    const double &decode_sharpening() const;
-    double &decode_sharpening();
+    [[nodiscard]] const double &decode_sharpening() const;
+    [[nodiscard]] double &decode_sharpening();
 
-    const bool &debug() const;
-    bool &debug();
+    [[nodiscard]] const bool &debug() const;
+    [[nodiscard]] bool &debug();
 
     void add_family(const std::shared_ptr<AprilTagFamily> &family);
     void remove_family(const std::shared_ptr<AprilTagFamily> &family);

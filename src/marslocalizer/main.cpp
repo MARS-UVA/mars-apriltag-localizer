@@ -39,14 +39,14 @@ int main(const int argc, const char* argv[]) {
         cv::cvtColor(frame, gray_frame, cv::COLOR_BGR2GRAY);
         if (std::vector<apriltag::AprilTagDetection> detections = detector.detect(gray_frame); !detections.empty()) {
             std::cout << "Detected " << detections.size() << " AprilTags:\n";
-            for (auto it = detections.cbegin(); it != detections.cend(); ++it) {
+            for (const auto & detection : detections) {
                 std::cout
                     << "\tID "
-                    << it->id()
+                    << detection.id()
                     << ": center at ("
-                    << it->center()(0)
+                    << detection.center()(0)
                     << ", "
-                    << it->center()(1)
+                    << detection.center()(1)
                     << ")\n";
             }
         }
