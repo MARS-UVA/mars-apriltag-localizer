@@ -10,19 +10,22 @@
 #include "wrapper.hpp"
 
 int main(const int argc, const char* argv[]) {
+    int camera_index;
     if (argc < 2) {
-        std::cerr << "Camera id not specified" << std::endl;
-        return 1;
+        std::cerr << "Camera index not specified; defaulting to 0" << std::endl;
+        camera_index = 0;
+    } else {
+        camera_index = std::stoi(argv[1]);
     }
+
     const auto family = apriltag::AprilTagFamily::get(tagStandard41h12_create(), tagStandard41h12_destroy);
     apriltag::AprilTagDetector detector;
     detector.nthreads() = 8;
     detector.add_family(family);
 
-    const int camera_index = static_cast<int>(std::strtol(argv[1], nullptr, 10));
     cv::VideoCapture capture {camera_index};
     if (!capture.isOpened()) {
-        std::cerr << "Could not open camera" << std::endl;
+        std::cerr << "Could not open camera at index " << camera_index << std::endl;
         return 1;
     }
 
