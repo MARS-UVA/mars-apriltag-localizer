@@ -3,10 +3,10 @@
 //
 
 #include <iostream>
+#include <tagStandard41h12.h>
 #include <opencv2/opencv.hpp>
 
 #include "overlays.hpp"
-#include "tagStandard41h12.h"
 #include "wrapper.hpp"
 
 int main(const int argc, const char* argv[]) {

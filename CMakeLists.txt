@@ -13,9 +13,6 @@ find_package(apriltag REQUIRED)
 
 include_directories(
         include/marslocalizer
-        include/apriltag
-        ${OpenCV_INCLUDE_DIRS}
-        EIGEN3_INCLUDE_DIR
 )
 
 set(CMAKE_CXX_STANDARD 17)
@@ -36,9 +33,9 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         SOVERSION ${PROJECT_VERSION_MAJOR}
 )
 target_link_libraries(${PROJECT_NAME}
-        apriltag
-        Eigen3::Eigen
-        ${OpenCV_LIBS}
+        PUBLIC apriltag
+        PUBLIC Eigen3::Eigen
+        PUBLIC ${OpenCV_LIBS}
 )
 target_link_libraries(2d_detect
         ${PROJECT_NAME}
