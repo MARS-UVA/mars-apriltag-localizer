@@ -1,8 +1,11 @@
 #ifndef MARSLOCALIZER_WRAPPER_HPP
 #define MARSLOCALIZER_WRAPPER_HPP
 
+#include <functional>
 #include <memory>
+#include <string>
 #include <Eigen/Dense>
+// ReSharper disable once CppUnusedIncludeDirective
 #include <opencv2/core/mat.hpp>
 
 #include "apriltag.h"
@@ -24,30 +27,36 @@ namespace detail {
 
 }
 
-// template <auto creator_fn, auto deleter_fn>
-// class AprilTagFamily {
-// public:
-//     static auto creator = creator_fn;
-//     static auto deleter = deleter_fn;
-//
-//     AprilTagFamily() : _family(creator_fn()) {
-//     }
-//
-//     detail::wrapping_ptr<apriltag_family_t, deleter_fn> raw() {
-//         return _family.get();
-//     }
-//
-// private:
-//     detail::wrapping_ptr<apriltag_family_t, deleter_fn> _family;
-// };
-//
-// using Tag36h11Family = AprilTagFamily<tag>
-// using TagStandard41h12Family = AprilTagFamily<tagStandard41h12_create, tagStandard41h12_destroy>;
+class AprilTagFamily {
+public:
+
+    using Deleter = void(apriltag_family_t*);
+
+    AprilTagFamily(apriltag_family_t *family, Deleter &deleter) : _family(family), _deleter(deleter) {
+    }
+
+    ~AprilTagFamily() {
+        _deleter(_family);
+    }
+
+    std::string_view name() const;
+    int width_at_border() const;
+    int total_width() const;
+    std::uint32_t minimum_hamming_distance() const;
+
+    const apriltag_family_t *raw() const;
+    apriltag_family_t *raw();
+
+private:
+
+    apriltag_family_t *_family;
+    Deleter& _deleter;
+
+};
 
 class AprilTagDetection {
 public:
-
-    AprilTagDetection(apriltag_detection_t *detection) : _detection(detection) {
+    explicit AprilTagDetection(apriltag_detection_t *detection) : _detection(detection) {
     }
 
     int id() const;
@@ -55,7 +64,9 @@ public:
     std::array<Eigen::Vector2d, 4> corners() const;
 
 private:
+
     detail::wrapping_ptr<apriltag_detection_t, apriltag_detection_destroy> _detection;
+
 };
 
 class AprilTagDetector {
@@ -65,16 +76,38 @@ public:
         : _detector(apriltag_detector_create()) {
     }
 
-    // void add_family(apriltag_family_t *family);
+    const int &nthreads() const;
+    int &nthreads();
 
-    apriltag_detector_t *raw() {
-        return _detector.get();
-    }
+    const float &quad_decimate() const;
+    float &quad_decimate();
 
-    std::vector<AprilTagDetection> detect(const cv::Mat& image);
+    const float &quad_sigma() const;
+    float &quad_sigma();
+
+    const bool &refine_edges() const;
+    bool &refine_edges();
+
+    const double &decode_sharpening() const;
+    double &decode_sharpening();
+
+    const bool &debug() const;
+    bool &debug();
+
+    void add_family(const std::shared_ptr<AprilTagFamily> &family);
+    void remove_family(const std::shared_ptr<AprilTagFamily> &family);
+    void clear_families();
+
+    std::vector<AprilTagDetection> detect(const cv::Mat &image);
+
+    const apriltag_detector_t *raw() const;
+    apriltag_detector_t *raw();
 
 private:
+
     detail::wrapping_ptr<apriltag_detector_t, apriltag_detector_destroy> _detector;
+    std::vector<std::shared_ptr<AprilTagFamily>> _families;
+
 };
 
 }
