@@ -4,54 +4,82 @@
 #include <opencv2/core/eigen.hpp>
 #include "calcexception.hpp"
 #include <vector>
+#include <algorithm>
 
 
 
-static std::vector<Eigen::Affine3f> PnP::solve_pnp(const Eigen::Matrix<float, Eigen::Dynamic, 3>& object_points, 
-    const Eigen::Matrix<float, Eigen::Dynamic, 2>& image_points, 
+static std::vector<Eigen::Affine3d> PnP::solve_pnp(const Eigen::Matrix<double, Eigen::Dynamic, 3>& object_points, 
+    const Eigen::Matrix<double, Eigen::Dynamic, 2>& image_points, 
     const CameraParameters& camera_params,
     PnPMethod method = PnPMethod::ITERATIVE
 ) {
-    cv::Mat obj_cv, img_cv, camera_mat_cv, dist_coeffs_cv;
-    cv::eigen2cv(object_points, obj_cv);
-    cv::eigen2cv(image_points, img_cv);
+    //Initialize cv inputs and copy over
+    //object and image points need to be converted to vectors of points
+    std::vector<cv::Point3d> obj_cv;
+    obj_cv.reserve(object_points.rows());
+    for (int i = 0; i < object_points.rows(); ++i) {
+        obj_cv.emplace_back(
+            object_points(i, 0),
+            object_points(i, 1),
+            object_points(i, 2)
+        );  
+    }
+    std::vector<cv::Point2d> img_cv;
+        img_cv.reserve(image_points.rows());
+    for (int i = 0; i < image_points.rows(); ++i) {
+        img_cv.emplace_back(
+            image_points(i, 0),
+            image_points(i, 1)
+        );
+    }
+
+    cv::Mat camera_mat_cv, dist_coeffs_cv;
     cv::eigen2cv(camera_params.get_matrix(), camera_mat_cv);
     cv::eigen2cv(camera_params.get_distortion_vector(), dist_coeffs_cv);
+    //initialize rotation and translation vectors, and errors (outputs)
     std::vector<cv::Mat> rvec, tvec;
-    std::vector<float> errors;
+    std::vector<double> errors;
+    int numSolutions;
 
+    //Call pnp method
     try{
-        int success = cv::solvePnPGeneric(obj_cv, img_cv, camera_mat_cv, dist_coeffs_cv, rvec, tvec, flags = method, reprojectionError = errors);
+        numSolutions = cv::solvePnPGeneric(obj_cv, img_cv, camera_mat_cv, dist_coeffs_cv, rvec, tvec, false,  method, cv::noArray(), cv::noArray(), errors);
     } catch (const cv::Exception& e){
         throw CalcException(e.what());
     }
-    if (!success){
+    if (numSolutions <=0){
         throw CalcException("Failed to solve");
     }
-    std::vector<Eigen::Affine3f> result;
-    while(errors.size() > 0){
-        auto min_ptr = std::min_element(errors.begin(),errors.end());
-        size_t min_index = std::distance(errors.begin(), min_ptr);
-        errors.erase(min_ptr);
 
-        Eigen::Affine3f transform = Eigen::Affine3f::Identity();
 
-        cv::Mat r_cv;
-        Eigen::Matrix3f R_eigen;
+    //Sort indices by error
+    size_t n = errors.size();
+    std::vector<size_t> idx(n);
+    std::iota(idx.begin(), idx.end(), 0);
+    std::sort(idx.begin(), idx.end(), [&](size_t a, size_t b){ return errors[a] < errors[b]; });
 
-        cv::Rodrigues(rvec[min_index], r_cv);
+    //Add affine3d transform objects to result using sorted indices
+    std::vector<Eigen::Affine3d> result;
+    for (size_t i = 0; i < n; ++i) {
+        size_t k = idx[i];
+
+        Eigen::Affine3d transform = Eigen::Affine3d::Identity();
+
+        cv::Mat R_cv;
+        Eigen::Matrix3d R_eigen;
+
+        cv::Rodrigues(rvec[k], R_cv);
         cv::cv2eigen(R_cv, R_eigen);
-        R_eigen = R_eigen.cast<float>();
+        R_eigen = R_eigen.cast<double>();
         transform.linear() = R_eigen;
 
-        Eigen::Vector3f t_eigen;
-        cv::cv2eigen(tvec[min_index], t_eigen); 
-        t_eigen = t_eigen.cast<float>();
+        Eigen::Vector3d t_eigen;
+        cv::cv2eigen(tvec[k], t_eigen);
+        t_eigen = t_eigen.cast<double>();
         transform.translation() = t_eigen;
 
-        rvec.erase(rvec.begin() + min_index);
-        tvec.erase(tvec.begin() + min_index);
         result.push_back(transform);
     }
+
     return result;
 }

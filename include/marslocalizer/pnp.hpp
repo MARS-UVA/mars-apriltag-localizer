@@ -15,8 +15,8 @@ public:
         IPPE = cv::SOLVEPNP_IPPE_SQUARE,
         SQPNP = cv::SOLVEPNP_SQPNP
     };
-    static std::vector<Eigen::Affine3f> solve_pnp(const Eigen::Matrix<float, Eigen::Dynamic, 3>& object_points, 
-        const Eigen::Matrix<float, Eigen::Dynamic, 2>& image_points, 
+    static std::vector<Eigen::Affine3d> solve_pnp(const Eigen::Matrix<double, Eigen::Dynamic, 3>& object_points, 
+        const Eigen::Matrix<double, Eigen::Dynamic, 2>& image_points, 
         const CameraParameters& camera_params,
         PnPMethod method = PnPMethod::ITERATIVE
     );
