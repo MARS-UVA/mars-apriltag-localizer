@@ -67,7 +67,7 @@ void apriltag::AprilTagDetector::clear_families() {
     _families.clear();
 }
 
-std::vector<apriltag::AprilTagDetection> apriltag::AprilTagDetector::detect(const cv::Mat &image) {
+std::vector<apriltag::AprilTagDetection> apriltag::AprilTagDetector::detect(const cv::Mat &image) const {
     if (image.dims != 2) {
         throw std::invalid_argument("Invalid image dimensions");
     }

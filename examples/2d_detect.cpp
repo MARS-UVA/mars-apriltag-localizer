@@ -32,7 +32,8 @@ int main(const int argc, const char* argv[]) {
     while (true) {
         if (capture.read(frame)) {
             cv::cvtColor(frame, gray_frame, cv::COLOR_BGR2GRAY);
-            if (std::vector<apriltag::AprilTagDetection> detections = detector.detect(gray_frame); !detections.empty()) {
+            if (std::vector<apriltag::AprilTagDetection> detections = detector.detect(gray_frame);
+                    !detections.empty()) {
                 apriltag::overlay_squares(frame, detections);
                 apriltag::overlay_labels(frame, detections);
             }

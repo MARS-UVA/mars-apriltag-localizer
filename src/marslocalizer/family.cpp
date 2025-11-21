@@ -1,8 +1,8 @@
 #include "wrapper.hpp"
 
-std::map<apriltag_family_t*, std::shared_ptr<apriltag::AprilTagFamily>> apriltag::AprilTagFamily::_instances {};
+std::map<const apriltag_family_t*, std::shared_ptr<apriltag::AprilTagFamily>> apriltag::AprilTagFamily::_instances {};
 
-std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagFamily::get(apriltag_family_t *family, Deleter&deleter) {
+std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagFamily::get(apriltag_family_t* family, Deleter& deleter) {
     if (const auto it = _instances.find(family); it != _instances.end()) {
         return it->second;
     }
@@ -11,7 +11,8 @@ std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagFamily::get(apriltag
     return new_obj;
 }
 
-std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagFamily::get_existing(apriltag_family_t *family) {
+// ReSharper disable once CppParameterMayBeConstPtrOrRef
+std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagFamily::get_existing(apriltag_family_t* family) {
     if (const auto it = _instances.find(family); it != _instances.end()) {
         return it->second;
     }

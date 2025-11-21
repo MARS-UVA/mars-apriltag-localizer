@@ -69,7 +69,7 @@ public:
      * @return If an AprilTagFamily object already exists for the family data, then return a shared pointer to that
      *         object. Otherwise, create a new AprilTagFamily object for the data and return a shared pointer to it.
      */
-    static std::shared_ptr<AprilTagFamily> get(apriltag_family_t *family, Deleter &deleter);
+    static std::shared_ptr<AprilTagFamily> get(apriltag_family_t* family, Deleter& deleter);
 
     // ReSharper disable once CppParameterMayBeConstPtrOrRef
     /**
@@ -79,7 +79,7 @@ public:
      * @return A shared pointer to the AprilTagFamily object which represents the given AprilTag family data.
      * @throw std::invalid_argument There is no corresponding AprilTagFamily object for the given data.
      */
-    static std::shared_ptr<AprilTagFamily> get_existing(apriltag_family_t *family);
+    static std::shared_ptr<AprilTagFamily> get_existing(apriltag_family_t* family);
 
     /**
      * Creates a new AprilTagFamily. This cannot be called directly.
@@ -88,7 +88,7 @@ public:
      * @param family Original apriltag_family_t object. Will probably be the result of a function with name tag*_create.
      * @param deleter Deleter function for this AprilTag family.
      */
-    AprilTagFamily([[maybe_unused]] ConstructorKey constructor_key, apriltag_family_t *family, Deleter &deleter)
+    AprilTagFamily([[maybe_unused]] const ConstructorKey& constructor_key, apriltag_family_t* family, Deleter& deleter)
     : _family(family), _deleter(deleter) {
     }
 
@@ -141,12 +141,12 @@ public:
 protected:
 
     struct ConstructorKey {
-        explicit ConstructorKey() {}
+        explicit ConstructorKey() = default;
     };
 
 private:
 
-    static std::map<apriltag_family_t*, std::shared_ptr<AprilTagFamily>> _instances;
+    static std::map<const apriltag_family_t*, std::shared_ptr<AprilTagFamily>> _instances;
 
     apriltag_family_t *_family;
     Deleter& _deleter;
@@ -359,14 +359,14 @@ public:
      * @param image Image in which AprilTags will be detected.
      * @return A std::vector of AprilTags that were detected. May be empty.
      */
-    std::vector<AprilTagDetection> detect(const cv::Mat& image);
+    [[nodiscard]] std::vector<AprilTagDetection> detect(const cv::Mat& image) const;
 
     /**
      * Returns a raw pointer to the wrapped C value.
      *
      * @return A raw pointer to the underlying @code apriltag_detector_t@endcode value.
      */
-    apriltag_detector_t* raw() const;
+    [[nodiscard]] apriltag_detector_t* raw() const;
 
 private:
 
