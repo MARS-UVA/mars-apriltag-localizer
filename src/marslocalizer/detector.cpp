@@ -86,16 +86,12 @@ std::vector<apriltag::AprilTagDetection> apriltag::AprilTagDetector::detect(cons
     std::vector<AprilTagDetection> detections;
     for (int i = 0; i < zarray_size(result); i += 1) {
         zarray_get(result, i, &detection);  // this performs a copy
-        detections.emplace_back(detection);
+        detections.emplace_back(detection, AprilTagFamily::get_existing(detection->family));
     }
     zarray_destroy(result);
     return detections;
 }
 
-const apriltag_detector_t *apriltag::AprilTagDetector::raw() const {
-    return _detector.get();
-}
-
-apriltag_detector_t *apriltag::AprilTagDetector::raw() {
+apriltag_detector_t *apriltag::AprilTagDetector::raw() const {
     return _detector.get();
 }

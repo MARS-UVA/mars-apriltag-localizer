@@ -13,8 +13,7 @@ int main(const int argc, const char* argv[]) {
         std::cerr << "Camera id not specified" << std::endl;
         return 1;
     }
-    const auto family = std::make_shared<apriltag::AprilTagFamily>(
-        tagStandard41h12_create(), tagStandard41h12_destroy);
+    const auto family = apriltag::AprilTagFamily::get(tagStandard41h12_create(), tagStandard41h12_destroy);
     apriltag::AprilTagDetector detector;
     detector.nthreads() = 8;
     detector.add_family(family);
@@ -36,6 +35,7 @@ int main(const int argc, const char* argv[]) {
         if (const int key = cv::waitKey(10); key == 'q') {
             break;
         }
+
         cv::cvtColor(frame, gray_frame, cv::COLOR_BGR2GRAY);
         if (std::vector<apriltag::AprilTagDetection> detections = detector.detect(gray_frame); !detections.empty()) {
             std::cout << "Detected " << detections.size() << " AprilTags:\n";

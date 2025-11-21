@@ -1,5 +1,23 @@
 #include "wrapper.hpp"
 
+std::map<apriltag_family_t*, std::shared_ptr<apriltag::AprilTagFamily>> apriltag::AprilTagFamily::_instances {};
+
+std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagFamily::get(apriltag_family_t *family, Deleter&deleter) {
+    if (const auto it = _instances.find(family); it != _instances.end()) {
+        return it->second;
+    }
+    auto new_obj = std::make_shared<AprilTagFamily>(ConstructorKey{}, family, deleter);
+    _instances.emplace(family, new_obj);
+    return new_obj;
+}
+
+std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagFamily::get_existing(apriltag_family_t *family) {
+    if (const auto it = _instances.find(family); it != _instances.end()) {
+        return it->second;
+    }
+    throw std::invalid_argument("AprilTag family doesn't already exist");
+}
+
 std::string_view apriltag::AprilTagFamily::name() const {
     return _family->name;
 }
@@ -16,10 +34,6 @@ std::uint32_t apriltag::AprilTagFamily::minimum_hamming_distance() const {
     return _family->h;
 }
 
-const apriltag_family_t *apriltag::AprilTagFamily::raw() const {
-    return _family;
-}
-
-apriltag_family_t *apriltag::AprilTagFamily::raw() {
+apriltag_family_t* apriltag::AprilTagFamily::raw() const {
     return _family;
 }
