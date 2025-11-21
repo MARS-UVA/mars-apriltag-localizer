@@ -5,6 +5,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
+#include "overlays.hpp"
 #include "tagStandard41h12.h"
 #include "wrapper.hpp"
 
@@ -26,29 +27,20 @@ int main(const int argc, const char* argv[]) {
     }
 
     cv::Mat frame;
-    cv::namedWindow("camera", cv::WINDOW_NORMAL);
+    cv::namedWindow("camera", cv::WINDOW_KEEPRATIO);
     cv::Mat gray_frame;
     while (true) {
         if (capture.read(frame)) {
+            cv::cvtColor(frame, gray_frame, cv::COLOR_BGR2GRAY);
+            if (std::vector<apriltag::AprilTagDetection> detections = detector.detect(gray_frame); !detections.empty()) {
+                apriltag::overlay_squares(frame, detections);
+                apriltag::overlay_labels(frame, detections);
+            }
+
             cv::imshow("camera", frame);
         }
-        if (const int key = cv::waitKey(10); key == 'q') {
+        if (const int key = cv::waitKey(1); key == 'q') {
             break;
-        }
-
-        cv::cvtColor(frame, gray_frame, cv::COLOR_BGR2GRAY);
-        if (std::vector<apriltag::AprilTagDetection> detections = detector.detect(gray_frame); !detections.empty()) {
-            std::cout << "Detected " << detections.size() << " AprilTags:\n";
-            for (const auto & detection : detections) {
-                std::cout
-                    << "\tID "
-                    << detection.id()
-                    << ": center at ("
-                    << detection.center()(0)
-                    << ", "
-                    << detection.center()(1)
-                    << ")\n";
-            }
         }
     }
     cv::destroyAllWindows();

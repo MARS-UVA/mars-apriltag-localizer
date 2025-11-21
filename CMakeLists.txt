@@ -24,11 +24,12 @@ add_library(${PROJECT_NAME}
         src/marslocalizer/family.cpp
         src/marslocalizer/detector.cpp
         src/marslocalizer/detection.cpp
+        src/marslocalizer/overlays.cpp
 )
-add_executable(twod_detect
-        examples/twod_detect.cpp
+add_executable(2d_detect
+        examples/2d_detect.cpp
 )
-add_dependencies(twod_detect ${PROJECT_NAME})
+add_dependencies(2d_detect ${PROJECT_NAME})
 set_target_properties(${PROJECT_NAME} PROPERTIES
         PUBLIC_HEADER include/marslocalizer/wrapper.hpp
         VERSION ${PROJECT_VERSION}
@@ -39,7 +40,7 @@ target_link_libraries(${PROJECT_NAME}
         Eigen3::Eigen
         ${OpenCV_LIBS}
 )
-target_link_libraries(twod_detect
+target_link_libraries(2d_detect
         ${PROJECT_NAME}
 )
 configure_file(marslocalizer.pc.in marslocalizer.pc @ONLY)
@@ -49,7 +50,7 @@ install(
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 install(
-        TARGETS twod_detect
+        TARGETS 2d_detect
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 install(
