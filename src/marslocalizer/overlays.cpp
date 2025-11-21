@@ -1,10 +1,6 @@
-//
-// Created by Ivan on 11/21/25.
-//
+#include <opencv2/imgproc.hpp>
 
 #include "overlays.hpp"
-
-#include <opencv2/imgproc.hpp>
 
 cv::Point2i vector2d_to_point2i(const Eigen::Vector2d& vector) {
     return cv::Point2i{static_cast<int>(vector.x()), static_cast<int>(vector.y())};

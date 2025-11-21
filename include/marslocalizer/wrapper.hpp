@@ -1,6 +1,7 @@
 #ifndef MARSLOCALIZER_WRAPPER_HPP
 #define MARSLOCALIZER_WRAPPER_HPP
 
+#include <apriltag.h>
 #include <functional>
 #include <map>
 #include <memory>
@@ -8,8 +9,6 @@
 #include <Eigen/Dense>
 // ReSharper disable once CppUnusedIncludeDirective
 #include <opencv2/core/mat.hpp>
-
-#include "apriltag.h"
 
 /** @file */
 
@@ -19,6 +18,7 @@ namespace detail {
 
     /**
      * A functor that wraps a function that deletes an object.
+     *
      * @tparam fn The function being wrapped.
      */
     template <auto fn>
@@ -31,6 +31,7 @@ namespace detail {
 
     /**
      * A unique pointer which wraps a C struct that performs deletion via some sort of deletion function.
+     *
      * @tparam T Type of the pointee.
      * @tparam fn The deleter function for the type.
      */

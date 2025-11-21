@@ -1,10 +1,7 @@
-//
-// Created by Ivan on 11/21/25.
-//
-
 #ifndef MARSLOCALIZER_DISPLAY_HPP
 #define MARSLOCALIZER_DISPLAY_HPP
 
+// ReSharper disable once CppUnusedIncludeDirective
 #include <opencv2/core/mat.hpp>
 
 #include "wrapper.hpp"

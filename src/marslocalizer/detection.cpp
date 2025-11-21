@@ -1,7 +1,3 @@
-//
-// Created by Ivan on 11/21/25.
-//
-
 #include "wrapper.hpp"
 
 int apriltag::AprilTagDetection::id() const {
