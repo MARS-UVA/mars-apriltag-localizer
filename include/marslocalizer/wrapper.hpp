@@ -139,6 +139,12 @@ public:
      */
     [[nodiscard]] apriltag_family_t *raw() const;
 
+    AprilTagFamily(const AprilTagFamily&) = delete;
+    AprilTagFamily(AprilTagFamily&&) = delete;
+
+    AprilTagFamily& operator=(const AprilTagFamily&) = delete;
+    AprilTagFamily& operator=(AprilTagFamily&&) = delete;
+
 protected:
 
     struct ConstructorKey {
@@ -229,6 +235,12 @@ public:
      * @return A raw pointer to the underlying @code apriltag_detection_t@endcode value.
      */
     [[nodiscard]] apriltag_detection_t *raw() const;
+
+    AprilTagDetection(const AprilTagDetection&) = delete;
+    AprilTagDetection(AprilTagDetection&&) = default;
+
+    AprilTagDetection& operator=(const AprilTagDetection&) = delete;
+    AprilTagDetection& operator=(AprilTagDetection&&) = default;
 
 private:
 
@@ -368,6 +380,12 @@ public:
      * @return A raw pointer to the underlying @code apriltag_detector_t@endcode value.
      */
     [[nodiscard]] apriltag_detector_t* raw() const;
+
+    AprilTagDetector(const AprilTagDetector&) = delete;
+    AprilTagDetector(AprilTagDetector&&) = default;
+
+    AprilTagDetector& operator=(const AprilTagDetector&) = delete;
+    AprilTagDetector& operator=(AprilTagDetector&&) = default;
 
 private:
 
