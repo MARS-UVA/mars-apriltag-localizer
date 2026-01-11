@@ -3,8 +3,8 @@
 std::map<const apriltag_family_t*, std::shared_ptr<apriltag::AprilTagFamily>> apriltag::AprilTagFamily::_instances {};
 
 std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagFamily::get(apriltag_family_t* family, Deleter& deleter) {
-    if (const auto it = _instances.find(family); it != _instances.end()) {
-        return it->second;
+    if (const auto entry = _instances.find(family); entry != _instances.end()) {
+        return entry->second;
     }
     auto new_obj = std::make_shared<AprilTagFamily>(ConstructorKey{}, family, deleter);
     _instances.emplace(family, new_obj);
@@ -13,8 +13,8 @@ std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagFamily::get(apriltag
 
 // ReSharper disable once CppParameterMayBeConstPtrOrRef
 std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagFamily::get_existing(apriltag_family_t* family) {
-    if (const auto it = _instances.find(family); it != _instances.end()) {
-        return it->second;
+    if (const auto entry = _instances.find(family); entry != _instances.end()) {
+        return entry->second;
     }
     throw std::invalid_argument("AprilTag family doesn't already exist");
 }

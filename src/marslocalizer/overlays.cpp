@@ -2,11 +2,16 @@
 
 #include "overlays.hpp"
 
+namespace {
+
 cv::Point2i vector2d_to_point2i(const Eigen::Vector2d& vector) {
     return cv::Point2i{static_cast<int>(vector.x()), static_cast<int>(vector.y())};
 }
 
-const auto MAGENTA = cv::Scalar{255, 0, 255, 255};
+}
+
+
+const auto MAGENTA = cv::Scalar{255, 0, 255, 255}; // NOLINT(*-throwing-static-initialization)
 
 void apriltag::overlay_squares(cv::Mat image, const std::vector<AprilTagDetection> &detections) {
     for (const auto& detection : detections) {

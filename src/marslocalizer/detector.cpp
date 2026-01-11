@@ -77,15 +77,15 @@ std::vector<apriltag::AprilTagDetection> apriltag::AprilTagDetector::detect(cons
     image_u8_t cimage = {
         .width = image.cols,
         .height = image.rows,
-        .stride = static_cast<std::int32_t>(image.step[0]),
+        .stride = static_cast<std::int32_t>(image.step[0]), // NOLINT(*-pro-bounds-avoid-unchecked-container-access)
         .buf = image.data
     };
 
     zarray_t *result = apriltag_detector_detect(raw(), &cimage);
-    apriltag_detection_t *detection = nullptr;
+    apriltag_detection_t* detection = nullptr; // NOLINT(*-const-correctness)
     std::vector<AprilTagDetection> detections;
     for (int i = 0; i < zarray_size(result); i += 1) {
-        zarray_get(result, i, &detection);  // this performs a copy
+        zarray_get(result, i, &detection);  // this performs a copy NOLINT(*-multi-level-implicit-pointer-conversion)
         detections.emplace_back(detection, AprilTagFamily::get_existing(detection->family));
     }
     zarray_destroy(result);
