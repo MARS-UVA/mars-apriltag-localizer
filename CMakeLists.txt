@@ -23,10 +23,12 @@ if (CMAKE_BUILD_TYPE MATCHES "Release")
 endif ()
 
 add_library(${PROJECT_NAME}
-        src/marslocalizer/family.cpp
+        src/marslocalizer/camera.cpp
         src/marslocalizer/detector.cpp
         src/marslocalizer/detection.cpp
+        src/marslocalizer/family.cpp
         src/marslocalizer/overlays.cpp
+        src/marslocalizer/pnp.cpp
 )
 add_executable(2d_detect
         examples/2d_detect.cpp

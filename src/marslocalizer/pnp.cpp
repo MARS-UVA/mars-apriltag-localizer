@@ -1,85 +1,75 @@
-#include <Eigen/Dense>
 #include "pnp.hpp"
+
+#include <algorithm>
+#include <vector>
+#include <Eigen/Dense>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
-#include "calcexception.hpp"
-#include <vector>
-#include <algorithm>
 
 
+std::vector<apriltag::Affine3dWithError> apriltag::solve_pnp(const std::vector<Eigen::Vector3d>& object_points,
+                                                       const std::vector<Eigen::Vector2d>& image_points,
+                                                       const CameraInfo& camera_info,
+                                                       PnPMethod method) {
+    std::vector<cv::Point3d> object_points_cv(object_points.size());
 
-static std::vector<Eigen::Affine3d> PnP::solve_pnp(const Eigen::Matrix<double, Eigen::Dynamic, 3>& object_points, 
-    const Eigen::Matrix<double, Eigen::Dynamic, 2>& image_points, 
-    const CameraParameters& camera_params,
-    PnPMethod method = PnPMethod::ITERATIVE
-) {
-    //Initialize cv inputs and copy over
-    //object and image points need to be converted to vectors of points
-    std::vector<cv::Point3d> obj_cv;
-    obj_cv.reserve(object_points.rows());
-    for (int i = 0; i < object_points.rows(); ++i) {
-        obj_cv.emplace_back(
-            object_points(i, 0),
-            object_points(i, 1),
-            object_points(i, 2)
-        );  
-    }
-    std::vector<cv::Point2d> img_cv;
-        img_cv.reserve(image_points.rows());
-    for (int i = 0; i < image_points.rows(); ++i) {
-        img_cv.emplace_back(
-            image_points(i, 0),
-            image_points(i, 1)
-        );
-    }
+    std::transform(object_points.cbegin(),
+                   object_points.cend(),
+                   object_points_cv.begin(),
+                   [&](const Eigen::Vector3d& vec) {
+        return cv::Point3d(vec.x(), vec.y(), vec.z());
+    });
 
-    cv::Mat camera_mat_cv, dist_coeffs_cv;
-    cv::eigen2cv(camera_params.get_matrix(), camera_mat_cv);
-    cv::eigen2cv(camera_params.get_distortion_vector(), dist_coeffs_cv);
-    //initialize rotation and translation vectors, and errors (outputs)
-    std::vector<cv::Mat> rvec, tvec;
-    std::vector<double> errors;
-    int numSolutions;
+    std::vector<cv::Point2d> image_points_cv(image_points.size());
+    std::transform(image_points.cbegin(),
+                   image_points.cend(),
+                   image_points_cv.begin(),
+                   [&](const Eigen::Vector2d& vec) {
+        return cv::Point2d(vec.x(), vec.y());
+    });
 
-    //Call pnp method
-    try{
-        numSolutions = cv::solvePnPGeneric(obj_cv, img_cv, camera_mat_cv, dist_coeffs_cv, rvec, tvec, false,  method, cv::noArray(), cv::noArray(), errors);
-    } catch (const cv::Exception& e){
-        throw CalcException(e.what());
-    }
-    if (numSolutions <=0){
-        throw CalcException("Failed to solve");
-    }
+    cv::Mat camera_matrix_cv;
+    cv::eigen2cv(camera_info.matrix(), camera_matrix_cv);
+    cv::Mat dist_coeffs_cv;
+    cv::eigen2cv(camera_info.distortion_vector(), dist_coeffs_cv);
 
+    std::vector<cv::Mat> rvecs_cv;
+    std::vector<cv::Mat> tvecs_cv;
+    std::vector<double> errors_cv;
 
-    //Sort indices by error
-    size_t n = errors.size();
-    std::vector<size_t> idx(n);
-    std::iota(idx.begin(), idx.end(), 0);
-    std::sort(idx.begin(), idx.end(), [&](size_t a, size_t b){ return errors[a] < errors[b]; });
+    const int num_solutions = cv::solvePnPGeneric(
+    object_points_cv,
+            image_points_cv,
+            camera_matrix_cv,
+            dist_coeffs_cv,
+            rvecs_cv,
+            tvecs_cv,
+            false,
+            static_cast<cv::SolvePnPMethod>(method),
+            cv::noArray(),
+            cv::noArray(),
+            errors_cv);
 
-    //Add affine3d transform objects to result using sorted indices
-    std::vector<Eigen::Affine3d> result;
-    for (size_t i = 0; i < n; ++i) {
-        size_t k = idx[i];
+    // Sort indices by error
+    std::vector<std::size_t> indices(num_solutions);
+    std::iota(indices.begin(), indices.end(), 0);
+    std::sort(indices.begin(), indices.end(), [&](const std::size_t lhs, const std::size_t rhs) {
+        return errors_cv.at(lhs) > errors_cv.at(rhs);
+    });
 
-        Eigen::Affine3d transform = Eigen::Affine3d::Identity();
+    std::vector<Affine3dWithError> results(num_solutions);
 
-        cv::Mat R_cv;
-        Eigen::Matrix3d R_eigen;
+    std::transform(indices.cbegin(), indices.cend(), results.begin(), [&](const std::size_t index) {
+        cv::Mat rotation_matrix_cv;
+        cv::Rodrigues(rvecs_cv.at(index), rotation_matrix_cv);
 
-        cv::Rodrigues(rvec[k], R_cv);
-        cv::cv2eigen(R_cv, R_eigen);
-        R_eigen = R_eigen.cast<double>();
-        transform.linear() = R_eigen;
+        const cv::Affine3d transform_cv { rvecs_cv.at(index), tvecs_cv.at(index) };
 
-        Eigen::Vector3d t_eigen;
-        cv::cv2eigen(tvec[k], t_eigen);
-        t_eigen = t_eigen.cast<double>();
-        transform.translation() = t_eigen;
+        Eigen::Affine3d transform;
+        cv::cv2eigen(transform_cv.matrix, transform.matrix());
 
-        result.push_back(transform);
-    }
+        return Affine3dWithError{ transform, errors_cv.at(index) };
+    });
 
-    return result;
+    return results;
 }
