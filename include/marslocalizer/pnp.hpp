@@ -2,10 +2,11 @@
 #define MARSLOCALIZER_PNP_HPP
 
 
-#include <Eigen/Dense>
-#include "camera.hpp"
-#include <opencv2/opencv.hpp>
 #include <vector>
+#include <Eigen/Dense>
+#include <opencv2/opencv.hpp>
+#include "camera.hpp"
+#include "data.hpp"
 
 namespace apriltag {
 
@@ -48,11 +49,6 @@ enum class PnPMethod : int {
      */
     SQPNP = cv::SOLVEPNP_SQPNP
 
-};
-
-struct Affine3dWithError {
-    Eigen::Affine3d pose;
-    double reprojection_error;
 };
 
 std::vector<Affine3dWithError> solve_pnp(

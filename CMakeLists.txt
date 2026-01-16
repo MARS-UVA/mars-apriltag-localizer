@@ -10,6 +10,7 @@ find_package(apriltag REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(apriltag REQUIRED)
+find_package(nlohmann_json 3.12.0 REQUIRED)
 
 include_directories(
         include/marslocalizer
@@ -29,6 +30,8 @@ add_library(${PROJECT_NAME}
         src/marslocalizer/family.cpp
         src/marslocalizer/overlays.cpp
         src/marslocalizer/pnp.cpp
+        src/marslocalizer/field.cpp
+        src/marslocalizer/localizer.cpp
 )
 add_executable(2d_detect
         examples/2d_detect.cpp
@@ -36,8 +39,12 @@ add_executable(2d_detect
 add_executable(2d_detect_simple
         examples/2d_detect_simple.cpp
 )
+add_executable(field_load
+        examples/field_load.cpp
+)
 add_dependencies(2d_detect ${PROJECT_NAME})
 add_dependencies(2d_detect_simple ${PROJECT_NAME})
+add_dependencies(field_load ${PROJECT_NAME})
 set_target_properties(${PROJECT_NAME} PROPERTIES
         PUBLIC_HEADER include/marslocalizer/wrapper.hpp
         VERSION ${PROJECT_VERSION}
@@ -47,11 +54,15 @@ target_link_libraries(${PROJECT_NAME}
         PUBLIC apriltag
         PUBLIC Eigen3::Eigen
         PUBLIC ${OpenCV_LIBS}
+        PUBLIC nlohmann_json::nlohmann_json
 )
 target_link_libraries(2d_detect
         ${PROJECT_NAME}
 )
 target_link_libraries(2d_detect_simple
+        ${PROJECT_NAME}
+)
+target_link_libraries(field_load
         ${PROJECT_NAME}
 )
 configure_file(marslocalizer.pc.in marslocalizer.pc @ONLY)
@@ -61,7 +72,7 @@ install(
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 install(
-        TARGETS 2d_detect 2d_detect_simple
+        TARGETS 2d_detect 2d_detect_simple field_load
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 install(
