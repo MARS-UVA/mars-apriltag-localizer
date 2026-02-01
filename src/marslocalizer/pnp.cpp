@@ -7,19 +7,42 @@
 #include <opencv2/core/eigen.hpp>
 
 
-std::vector<apriltag::Affine3dWithError> apriltag::solve_pnp(cv::InputArray object_points,
-                                                             cv::InputArray image_points,
-                                                             cv::InputArray camera_intrinsics,
-                                                             cv::InputArray distortion_vector,
+std::vector<apriltag::Affine3dWithError> apriltag::solve_pnp(const cv::Mat& object_points,
+                                                             const cv::Mat& image_points,
+                                                             const cv::Mat& camera_intrinsics,
+                                                             const cv::Mat& distortion_vector,
                                                              PnPMethod method) {
-
+    cv::Mat processed_object_points(object_points.size(), object_points.type());
+    cv::Mat processed_image_points(image_points.size(), image_points.type());
     std::vector<cv::Mat> rvecs_cv;
     std::vector<cv::Mat> tvecs_cv;
     std::vector<double> errors_cv;
 
+    if (method == PnPMethod::IPPE_SQUARE) {
+        if (object_points.rows != 4) {
+            throw std::invalid_argument("PnPMethod::IPPE_SQUARE requires exactly 4 object points");
+        }
+        if (image_points.rows != 4) {
+            throw std::invalid_argument("PnPMethod::IPPE_SQUARE requires exactly 4 image points");
+        }
+
+        object_points.row(0).copyTo(processed_object_points.row(1));
+        object_points.row(1).copyTo(processed_object_points.row(0));
+        object_points.row(2).copyTo(processed_object_points.row(3));
+        object_points.row(3).copyTo(processed_object_points.row(2));
+
+        image_points.row(0).copyTo(processed_image_points.row(1));
+        image_points.row(1).copyTo(processed_image_points.row(0));
+        image_points.row(2).copyTo(processed_image_points.row(3));
+        image_points.row(3).copyTo(processed_image_points.row(2));
+    } else {
+        processed_object_points = object_points;
+        processed_image_points = image_points;
+    }
+
     const int num_solutions = cv::solvePnPGeneric(
-    object_points,
-            image_points,
+            processed_object_points,
+            processed_image_points,
             camera_intrinsics,
             distortion_vector,
             rvecs_cv,

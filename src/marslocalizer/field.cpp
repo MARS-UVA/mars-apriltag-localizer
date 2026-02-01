@@ -5,6 +5,7 @@
 #include "field.hpp"
 
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -16,15 +17,15 @@ namespace {
 
 Eigen::Matrix<double, 3, 4> get_corner_points(const double tag_size) {
     Eigen::Matrix<double, 3, 4> corners;
-    corners << -1, +1, +1, -1,
+    corners << +1, -1, -1, +1,
                +1, +1, -1, -1,
                 0,  0,  0,  0;
     corners *= tag_size / 2;
     return corners;
 }
 
-constexpr double rad2deg(const double radians) {
-    return radians * 180 / EIGEN_PI; // NOLINT(*-avoid-magic-numbers)
+constexpr double deg2rad(const double degrees) {
+    return degrees * EIGEN_PI / 180; // NOLINT(*-avoid-magic-numbers)
 }
 
 }
@@ -97,11 +98,13 @@ std::shared_ptr<apriltag::AprilTagField> apriltag::AprilTagField::parse(std::ifs
             throw std::invalid_argument(oss.str());
         }
         const json angles = fiducial.at("rotation").get<json>();
-        pose.linear() = (Eigen::AngleAxisd(rad2deg(angles.at(2)), Eigen::Vector3d::UnitZ()) *
-                              Eigen::AngleAxisd(rad2deg(angles.at(1)), Eigen::Vector3d::UnitY()) *
-                              Eigen::AngleAxisd(rad2deg(angles.at(0)), Eigen::Vector3d::UnitX())).toRotationMatrix();
+        pose.linear() = (Eigen::AngleAxisd(deg2rad(angles.at(2)), Eigen::Vector3d::UnitZ()) *
+                              Eigen::AngleAxisd(deg2rad(angles.at(1)), Eigen::Vector3d::UnitY()) *
+                              Eigen::AngleAxisd(deg2rad(angles.at(0)), Eigen::Vector3d::UnitX())).toRotationMatrix();
 
         info.set_pose(pose);
+
+        std::cerr << "apriltag " << info._id << ":\ncorners:\n" << info._corners << "\n~~~\n";
 
         field->_fiducials[info._id] = info;
     });

@@ -18,6 +18,11 @@ include_directories(
 
 set(CMAKE_CXX_STANDARD 17)
 
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    add_compile_options(-O0)
+    add_link_options(-O0)
+endif ()
+
 if (CMAKE_BUILD_TYPE MATCHES "Release")
     add_compile_options(-O2)
     add_link_options(-O2)
@@ -42,9 +47,13 @@ add_executable(2d_detect_simple
 add_executable(localize
         examples/localize.cpp
 )
+add_executable(localize_data
+        examples/localize_data.cpp
+)
 add_dependencies(2d_detect ${PROJECT_NAME})
 add_dependencies(2d_detect_simple ${PROJECT_NAME})
 add_dependencies(localize ${PROJECT_NAME})
+add_dependencies(localize_data ${PROJECT_NAME})
 set_target_properties(${PROJECT_NAME} PROPERTIES
         PUBLIC_HEADER include/marslocalizer/wrapper.hpp
         VERSION ${PROJECT_VERSION}
@@ -65,6 +74,9 @@ target_link_libraries(2d_detect_simple
 target_link_libraries(localize
         ${PROJECT_NAME}
 )
+target_link_libraries(localize_data
+        ${PROJECT_NAME}
+)
 configure_file(marslocalizer.pc.in marslocalizer.pc @ONLY)
 install(
         TARGETS ${PROJECT_NAME}
@@ -72,7 +84,7 @@ install(
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 install(
-        TARGETS 2d_detect 2d_detect_simple localize
+        TARGETS 2d_detect 2d_detect_simple localize localize_data
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 install(

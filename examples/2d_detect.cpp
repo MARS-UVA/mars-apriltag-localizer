@@ -23,7 +23,7 @@ int main(const int argc, const char* argv[]) {
     detector.nthreads() = 8;
     detector.add_family(family);
 
-    cv::VideoCapture capture {camera_index};
+    cv::VideoCapture capture { "/Users/ivan/Downloads/apriltag_tests/H 145cm A 0°/1.mp4" };
     if (!capture.isOpened()) {
         std::cerr << "Could not open camera at index " << camera_index << std::endl;
         return 1;

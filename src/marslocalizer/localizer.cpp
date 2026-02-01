@@ -12,10 +12,10 @@ namespace {
 
 cv::Mat get_corner_points(const double tag_size) {
     cv::Mat_<double> corners(4, 3);
-    corners << -1, +1, 0,
-               +1, +1, 0,
-               +1, -1, 0,
-               -1, -1, 0;
+    corners << +1, +1, 0,
+               -1, +1, 0,
+               -1, -1, 0,
+               +1, -1, 0;
     corners *= tag_size / 2;
     return corners;
 }
@@ -70,7 +70,7 @@ std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::loc
             extraneous += 1;
         }
     }
-    int used_tags = detected_tags - extraneous;
+    const int used_tags = detected_tags - extraneous;
     if (extraneous > 0) {
         object_points.resize(4 * used_tags);
         image_points.resize(4 * used_tags);
@@ -98,12 +98,14 @@ std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::loc
             return std::nullopt;
         }
         result.estimate = *std::min_element(
-        candidates.cbegin(),
-        candidates.cend(),
-        [](const Affine3dWithError& lhs, const Affine3dWithError& rhs) -> bool {
-        return lhs.reprojection_error < rhs.reprojection_error;
-    });
+            candidates.cbegin(),
+            candidates.cend(),
+            [](const Affine3dWithError& lhs, const Affine3dWithError& rhs) -> bool {
+                return lhs.reprojection_error < rhs.reprojection_error;
+            }
+        );
     }
 
+    result.estimate.pose = result.estimate.pose.inverse();
     return result;
 }
