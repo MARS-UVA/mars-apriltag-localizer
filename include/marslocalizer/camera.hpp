@@ -30,13 +30,15 @@ struct CameraIntrinsics {
      */
     double cy;
 
-    CameraIntrinsics(const double fx, const double fy, const double cx, const double cy)
+    constexpr CameraIntrinsics(const double fx, const double fy, const double cx, const double cy)
         : fx{fx}, fy{fy}, cx{cx}, cy{cy} {
     }
 
-    explicit CameraIntrinsics(const Eigen::Matrix3d& matrix)
+    explicit constexpr CameraIntrinsics(const Eigen::Matrix3d& matrix)
         : fx{matrix(0, 0)}, fy{matrix(1, 1)}, cx{matrix(0, 2)}, cy{matrix(1, 2)} {
     }
+
+    operator Eigen::Matrix3d() const;
 
 };
 
@@ -49,54 +51,54 @@ struct CameraIntrinsics {
 struct RadialDistortionCoefficients {
     double k1, k2, k3, k4, k5, k6;
 
-    RadialDistortionCoefficients()
+    constexpr RadialDistortionCoefficients()
         : k1{0}, k2{0}, k3{0}, k4{0}, k5{0}, k6{0} {
     }
 
-    RadialDistortionCoefficients(const double k1, const double k2)
+    constexpr RadialDistortionCoefficients(const double k1, const double k2)
         : k1{k1}, k2{k2}, k3{0}, k4{0}, k5{0}, k6{0} {
     }
 
-    RadialDistortionCoefficients(const double k1, const double k2, const double k3)
+    constexpr RadialDistortionCoefficients(const double k1, const double k2, const double k3)
         : k1{k1}, k2{k2}, k3{k3}, k4{0}, k5{0}, k6{0} {
     }
 
-    RadialDistortionCoefficients(
+    constexpr RadialDistortionCoefficients(
         const double k1, const double k2, const double k3, const double k4, const double k5, const double k6)
         : k1{k1}, k2{k2}, k3{k3}, k4{k4}, k5{k5}, k6{k6} {
     }
 
-    bool is_zero() const;
+    constexpr bool is_zero() const;
 
 };
 
 struct TangentialDistortionCoefficients {
     double p1, p2;
 
-    TangentialDistortionCoefficients()
+    constexpr TangentialDistortionCoefficients()
         : p1{0}, p2{0} {
     }
 
-    TangentialDistortionCoefficients(const double p1, const double p2)
+    constexpr TangentialDistortionCoefficients(const double p1, const double p2)
         : p1{p1}, p2{p2} {
     }
 
-    bool is_zero() const;
+    constexpr bool is_zero() const;
 
 };
 
 struct ThinPrismDistortionCoefficients {
     double s1, s2, s3, s4;
 
-    ThinPrismDistortionCoefficients()
+    constexpr ThinPrismDistortionCoefficients()
         : s1{0}, s2{0}, s3{0}, s4{0} {
     }
 
-    ThinPrismDistortionCoefficients(const double s1, const double s2, const double s3, const double s4)
+    constexpr ThinPrismDistortionCoefficients(const double s1, const double s2, const double s3, const double s4)
         : s1{s1}, s2{s2}, s3{s3}, s4{s4} {
     }
 
-    bool is_zero() const;
+    constexpr bool is_zero() const;
 
 };
 
@@ -110,7 +112,7 @@ struct CameraInfo {
         : camera_intrinsics{camera_intrinsics} {
     }
 
-    CameraInfo(
+    constexpr CameraInfo(
         const CameraIntrinsics& camera_intrinsics,
         const RadialDistortionCoefficients& radial_distortion_coefficients,
         const TangentialDistortionCoefficients& tangential_distortion_coefficients)
@@ -118,7 +120,7 @@ struct CameraInfo {
           tangential_distortion_coefficients{tangential_distortion_coefficients} {
     }
 
-    CameraInfo(
+    constexpr CameraInfo(
         const CameraIntrinsics& camera_intrinsics,
         const RadialDistortionCoefficients& radial_distortion_coefficients,
         const TangentialDistortionCoefficients& tangential_distortion_coefficients,
@@ -128,18 +130,18 @@ struct CameraInfo {
           thin_prism_distortion_coefficients{thin_prism_distortion_coefficients} {
     }
 
-    explicit CameraInfo(const Eigen::Matrix3d& camera_intrinsics)
+    explicit constexpr CameraInfo(const Eigen::Matrix3d& camera_intrinsics)
         : camera_intrinsics{camera_intrinsics(0,0) , camera_intrinsics(1,1),
             camera_intrinsics(0,2), camera_intrinsics(1,2)} {
     }
 
-    CameraInfo(const Eigen::Matrix3d& camera_intrinsics,
+    constexpr CameraInfo(const Eigen::Matrix3d& camera_intrinsics,
         const Eigen::Vector<double, 0>& _)
         : camera_intrinsics{camera_intrinsics(0,0) , camera_intrinsics(1,1),
             camera_intrinsics(0,2), camera_intrinsics(1,2)} {
     }
 
-    CameraInfo(
+    constexpr CameraInfo(
         const Eigen::Matrix3d& camera_intrinsics, const Eigen::Vector4d& distortion_coefficients)
         : camera_intrinsics{camera_intrinsics(0,0) , camera_intrinsics(1,1),
             camera_intrinsics(0,2), camera_intrinsics(1,2)},
@@ -147,7 +149,7 @@ struct CameraInfo {
           tangential_distortion_coefficients{distortion_coefficients(2), distortion_coefficients(3)} {
     }
 
-    CameraInfo(
+    constexpr CameraInfo(
         const Eigen::Matrix3d& camera_intrinsics, const Eigen::Vector<double, 5>& distortion_coefficients)
         : camera_intrinsics{camera_intrinsics(0,0) , camera_intrinsics(1,1),
             camera_intrinsics(0,2), camera_intrinsics(1,2)},
@@ -156,7 +158,7 @@ struct CameraInfo {
           tangential_distortion_coefficients{distortion_coefficients(2), distortion_coefficients(3)} {
     }
 
-    CameraInfo(
+    constexpr CameraInfo(
         const Eigen::Matrix3d& camera_intrinsics, const Eigen::Vector<double, 8>& distortion_coefficients)
         : camera_intrinsics{camera_intrinsics(0,0) , camera_intrinsics(1,1),
             camera_intrinsics(0,2), camera_intrinsics(1,2)},
@@ -166,7 +168,7 @@ struct CameraInfo {
           tangential_distortion_coefficients{distortion_coefficients(2), distortion_coefficients(3)} {
     }
 
-    CameraInfo(
+    constexpr CameraInfo(
         const Eigen::Matrix3d& camera_intrinsics, const Eigen::Vector<double, 12>& distortion_coefficients)
         : camera_intrinsics{camera_intrinsics(0,0) , camera_intrinsics(1,1),
             camera_intrinsics(0,2), camera_intrinsics(1,2)},
@@ -180,7 +182,7 @@ struct CameraInfo {
 
     [[nodiscard]] Eigen::Matrix3d matrix() const;
 
-    [[nodiscard]] Eigen::VectorXd distortion_vector() const;
+    [[nodiscard]] Eigen::Vector<double, 12> distortion_vector() const;
      
 };
 

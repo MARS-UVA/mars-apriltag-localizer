@@ -30,33 +30,32 @@ constexpr double rad2deg(const double radians) {
 }
 
 apriltag::AprilTagInfo::AprilTagInfo()
-: _id(0), _size(0), _pose{Eigen::Affine3d::Identity()}, _corners{Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(),
-    Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero()} {
+: _id(0), _size(0) {
 }
 
 void apriltag::AprilTagInfo::set_pose(const Eigen::Affine3d& pose) {
     _pose = pose;
-    Eigen::Matrix<double, 3, 4> corner_matrix = pose * get_corner_points(_size);
-    std::move(corner_matrix.colwise().begin(), corner_matrix.colwise().end(), _corners.begin());
+    _corners = (pose * get_corner_points(_size)).transpose().eval();
+    cv::eigen2cv(_corners, _corners_cv);
 }
 
-apriltag::AprilTagField apriltag::AprilTagField::parse(std::ifstream& input) {
+std::shared_ptr<apriltag::AprilTagField> apriltag::AprilTagField::parse(std::ifstream& input) {
     const json json_data = json::parse(input);
 
     if (!json_data.contains("fiducials")) {
         throw std::invalid_argument("Bad AprilTag field JSON: no fiducials provided");
     }
 
-    AprilTagField field;
+    std::shared_ptr<AprilTagField> field = std::make_shared<AprilTagField>();
 
     if (json_data.contains("name")) {
-        field._name = json_data.at("name").get<std::string>();
+        field->_name = json_data.at("name").get<std::string>();
     };
 
     if (!json_data.contains("tag_family")) {
         throw std::invalid_argument("Bad AprilTag field JSON: tag_family not provided");
     }
-    field._tag_family = json_data.at("tag_family").get<std::string>();
+    field->_tag_family = json_data.at("tag_family").get<std::string>();
 
     const json fiducials = json_data.at("fiducials").get<json>();
     std::for_each(fiducials.cbegin(), fiducials.cend(), [&](const json& fiducial) {
@@ -67,9 +66,9 @@ apriltag::AprilTagField apriltag::AprilTagField::parse(std::ifstream& input) {
             throw std::invalid_argument("Bad AprilTag field JSON: ID was not provided for an Apriltag");
         }
         info._id = fiducial.at("id").get<std::uint32_t>();
-        if (auto search = field._fiducials.find(info._id); search != field._fiducials.end()) {
+        if (auto search = field->_fiducials.find(info._id); search != field->_fiducials.end()) {
             std::ostringstream oss;
-            oss << "Bad AprilTag field JSON: more than one AprilTag with ID" << info._id;
+            oss << "Bad AprilTag field JSON: more than one AprilTag with ID " << info._id;
         }
 
         if (!fiducial.contains("size")) {
@@ -104,7 +103,7 @@ apriltag::AprilTagField apriltag::AprilTagField::parse(std::ifstream& input) {
 
         info.set_pose(pose);
 
-        field._fiducials[info._id] = info;
+        field->_fiducials[info._id] = info;
     });
 
     return field;

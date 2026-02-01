@@ -17,6 +17,10 @@ std::array<Eigen::Vector2d, 4> apriltag::AprilTagDetection::corners() const {
     };
 }
 
+cv::Mat apriltag::AprilTagDetection::corners_view() const {
+    return {4, 2, CV_64F, static_cast<void*>(_detection->p)};
+}
+
 std::shared_ptr<apriltag::AprilTagFamily> apriltag::AprilTagDetection::family() const {
     return _family;
 }

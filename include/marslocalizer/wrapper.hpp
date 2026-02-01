@@ -176,7 +176,7 @@ public:
      * @param detection Raw pointer to the @code apriltag_detection_t@endcode to wrap.
      * @param family A const shared pointer to the AprilTagFamily of which the detected AprilTag is a member.
      */
-    explicit AprilTagDetection(apriltag_detection_t *detection, const std::shared_ptr<AprilTagFamily>& family)
+    AprilTagDetection(apriltag_detection_t *detection, const std::shared_ptr<AprilTagFamily>& family)
     : _detection(detection), _family(family) {
     }
 
@@ -230,6 +230,16 @@ public:
     [[nodiscard]] std::array<Eigen::Vector2d, 4> corners() const;
 
     /**
+     * Returns a view of the tag's corner points. Callers should be careful to not persist the matrix instance after
+     * the AprilTagDetection object is deallocated, since the data will be freed.
+     *
+     * @return An OpenCV matrix containing the AprilTag's corner points in pixel coordinates for the image (the origin
+     *         is at the top left of the image, the first coordinate increases in the rightward direction, and the
+     *         second coordinate increases in the downward direction). Always specified in counterclockwise order.
+     */
+    [[nodiscard]] cv::Mat corners_view() const;
+
+    /**
      * Returns a raw pointer to the wrapped C value.
      *
      * @return A raw pointer to the underlying @code apriltag_detection_t@endcode value.
@@ -247,6 +257,15 @@ private:
     detail::wrapping_ptr<apriltag_detection_t, apriltag_detection_destroy> _detection;
     std::shared_ptr<AprilTagFamily> _family;
 
+};
+
+struct AprilTagDetectorConfiguration {
+    int nthreads;
+    float quad_decimate;
+    float quad_sigma;
+    bool refine_edges;
+    double decode_sharpening;
+    bool debug;
 };
 
 /**
@@ -268,7 +287,7 @@ public:
      *
      * @return The number of threads which the detector may use.
      */
-    [[nodiscard]] const int& nthreads() const;
+    [[nodiscard]] int nthreads() const;
 
     /**
      * Non-const accessor to the number of threads the detector may use.
@@ -282,7 +301,7 @@ public:
      *
      * @return The amount by which to decimate the image before performing quad detection.
      */
-    [[nodiscard]] const float& quad_decimate() const;
+    [[nodiscard]] float quad_decimate() const;
 
     /**
      * Non-const accessor to the amount by which the detector decimates the image.
@@ -296,7 +315,7 @@ public:
      *
      * @return The amount of Gaussian blur to apply to the image before performing quad detection.
      */
-    [[nodiscard]] const float& quad_sigma() const;
+    [[nodiscard]] float quad_sigma() const;
 
     /**
      * Non-const accessor to the amount of Gaussian blur to apply to the image before performing quad detection.
@@ -310,7 +329,7 @@ public:
      *
      * @return Whether the detector will adjust quad edges to snap to areas of higher luminance gradients.
      */
-    [[nodiscard]] const bool& refine_edges() const;
+    [[nodiscard]] bool refine_edges() const;
 
     /**
      * Non-const accessor to whether to refine quad edges.
@@ -324,7 +343,7 @@ public:
      *
      * @return The amount of sharpening to apply to decoded images before quad detection is performed.
      */
-    [[nodiscard]] const double& decode_sharpening() const;
+    [[nodiscard]] double decode_sharpening() const;
 
     /**
      * Non-const accessor to the amount of sharpening to apply.
@@ -338,7 +357,7 @@ public:
      *
      * @return Whether to output additional debug information.
      */
-    [[nodiscard]] const bool& debug() const;
+    [[nodiscard]] bool debug() const;
 
     /**
      * Non-const accessor to whether to output additional debug information.
@@ -393,6 +412,8 @@ private:
     std::vector<std::shared_ptr<AprilTagFamily>> _families;
 
 };
+
+image_u8_t cv2cimage(const cv::Mat& image);
 
 }
 

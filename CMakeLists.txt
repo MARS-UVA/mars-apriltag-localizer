@@ -39,12 +39,12 @@ add_executable(2d_detect
 add_executable(2d_detect_simple
         examples/2d_detect_simple.cpp
 )
-add_executable(field_load
-        examples/field_load.cpp
+add_executable(localize
+        examples/localize.cpp
 )
 add_dependencies(2d_detect ${PROJECT_NAME})
 add_dependencies(2d_detect_simple ${PROJECT_NAME})
-add_dependencies(field_load ${PROJECT_NAME})
+add_dependencies(localize ${PROJECT_NAME})
 set_target_properties(${PROJECT_NAME} PROPERTIES
         PUBLIC_HEADER include/marslocalizer/wrapper.hpp
         VERSION ${PROJECT_VERSION}
@@ -62,7 +62,7 @@ target_link_libraries(2d_detect
 target_link_libraries(2d_detect_simple
         ${PROJECT_NAME}
 )
-target_link_libraries(field_load
+target_link_libraries(localize
         ${PROJECT_NAME}
 )
 configure_file(marslocalizer.pc.in marslocalizer.pc @ONLY)
@@ -72,7 +72,7 @@ install(
         PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 install(
-        TARGETS 2d_detect 2d_detect_simple field_load
+        TARGETS 2d_detect 2d_detect_simple localize
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 install(
