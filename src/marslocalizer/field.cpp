@@ -5,7 +5,6 @@
 #include "field.hpp"
 
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
@@ -103,8 +102,6 @@ std::shared_ptr<apriltag::AprilTagField> apriltag::AprilTagField::parse(std::ifs
                               Eigen::AngleAxisd(deg2rad(angles.at(0)), Eigen::Vector3d::UnitX())).toRotationMatrix();
 
         info.set_pose(pose);
-
-        std::cerr << "apriltag " << info._id << ":\ncorners:\n" << info._corners << "\n~~~\n";
 
         field->_fiducials[info._id] = info;
     });
