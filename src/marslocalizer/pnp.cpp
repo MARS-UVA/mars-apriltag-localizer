@@ -9,8 +9,8 @@
 
 std::vector<apriltag::Affine3dWithError> apriltag::solve_pnp(const cv::Mat& object_points,
                                                              const cv::Mat& image_points,
-                                                             const cv::Mat& camera_intrinsics,
-                                                             const cv::Mat& distortion_vector,
+                                                             cv::InputArray camera_intrinsics,
+                                                             cv::InputArray distortion_vector,
                                                              PnPMethod method) {
     cv::Mat processed_object_points(object_points.size(), object_points.type());
     cv::Mat processed_image_points(image_points.size(), image_points.type());

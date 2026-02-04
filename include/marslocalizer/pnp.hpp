@@ -54,8 +54,8 @@ enum class PnPMethod : int {
 std::vector<Affine3dWithError> solve_pnp(
     const cv::Mat& object_points,
     const cv::Mat& image_points,
-    const cv::Mat& camera_intrinsics,
-    const cv::Mat& distortion_vector,
+    cv::InputArray camera_intrinsics,
+    cv::InputArray distortion_vector,
     PnPMethod method = PnPMethod::ITERATIVE);
 
 }

@@ -30,19 +30,20 @@ apriltag::AprilTagDetector& apriltag::CameraLocalizer::detector() {
     return _detector;
 }
 
-apriltag::CameraInfo apriltag::CameraLocalizer::camera_info() const {
-    Eigen::Matrix3d camera_intrinsics_eigen;
-    Eigen::Vector<double, 12> distortion_vector_eigen;
-    cv::cv2eigen(_camera_intrinsics, camera_intrinsics_eigen);
-    cv::cv2eigen(_distortion_vector, distortion_vector_eigen);
-    return { camera_intrinsics_eigen, distortion_vector_eigen };
-}
-
 std::shared_ptr<const apriltag::AprilTagField> apriltag::CameraLocalizer::field() const {
     return _field;
 }
 
-std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::localize(const cv::Mat& image) const {
+std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::localize(const cv::Mat& image, const CameraInfo& camera_info) const {
+    cv::Mat camera_matrix;
+    cv::Mat distortion_vector;
+    cv::eigen2cv(camera_info.matrix(), camera_matrix);
+    cv::eigen2cv(camera_info.distortion_vector(), distortion_vector);
+    return localize(image, camera_matrix, distortion_vector);
+}
+
+std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::localize(const cv::Mat& image,
+    cv::InputArray camera_matrix, cv::InputArray distortion_vector) const {
     image_u8_t cimage = cv2cimage(image);
     zarray_t* result_zarr = apriltag_detector_detect(_detector.raw(), &cimage);
     if (result_zarr == nullptr) {
@@ -86,14 +87,14 @@ std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::loc
             throw std::runtime_error("Tag did not actually exist???");
         }
         object_points = get_corner_points(tag->_size);
-        candidates = solve_pnp(object_points, image_points, _camera_intrinsics, _distortion_vector, PnPMethod::IPPE_SQUARE);
+        candidates = solve_pnp(object_points, image_points, camera_matrix, distortion_vector, PnPMethod::IPPE_SQUARE);
         if (candidates.empty()) {
             return std::nullopt;
         }
         result.estimate.pose = candidates.at(0).pose * tag->_pose.inverse();
         result.estimate.reprojection_error = candidates.at(0).reprojection_error;
     } else {
-        candidates = solve_pnp(object_points, image_points, _camera_intrinsics, _distortion_vector, _method);
+        candidates = solve_pnp(object_points, image_points, camera_matrix, distortion_vector, _method);
         if (candidates.empty()) {
             return std::nullopt;
         }

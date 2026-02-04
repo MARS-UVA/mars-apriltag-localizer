@@ -44,7 +44,7 @@ int main(const int argc, const char* argv[]) {
 
     std::shared_ptr<apriltag::AprilTagField> field = apriltag::AprilTagField::parse(field_file);
 
-    apriltag::CameraLocalizer localizer { info, field, apriltag::PnPMethod::SQPNP };
+    apriltag::CameraLocalizer localizer { field, apriltag::PnPMethod::SQPNP };
 
     const auto family = apriltag::AprilTagFamily::get(tagStandard41h12_create(), tagStandard41h12_destroy);
     localizer.detector().nthreads() = 8;
@@ -62,7 +62,7 @@ int main(const int argc, const char* argv[]) {
     std::cout << "frame,x,y,z,zxz_1,zxz_2,zxz_3,error\n";
     while (capture.read(frame)) {
         cv::cvtColor(frame, gray_frame, cv::COLOR_BGR2GRAY);
-        if (std::optional<apriltag::CameraLocalizationResult> result = localizer.localize(gray_frame); result.has_value()) {
+        if (std::optional<apriltag::CameraLocalizationResult> result = localizer.localize(gray_frame, info); result.has_value()) {
             Eigen::Vector3d translation = result->estimate.pose.translation();
             Eigen::Vector3d rotation = result->estimate.pose.linear().canonicalEulerAngles(2, 0, 2);
             std::cout << frame_index << "," <<
