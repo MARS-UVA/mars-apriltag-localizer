@@ -13,6 +13,7 @@ following dependencies first:
   will automatically perform the required setup. It installs the library to
   the project directory instead of one of the standard locations to avoid
   polluting your `/usr` or `/usr/local`.
+* JSON for modern C++ (a.k.a `nlohmann-json`) 3.x.x (tested on 3.12.0)
 
 While the above is definitely the most automatic, any method will work as long
 as you set your prefix path appropriately!
