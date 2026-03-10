@@ -8,6 +8,8 @@
 #include <Eigen/Geometry>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
+
+#include "common.hpp"
 #include "pnp.hpp"
 
 namespace {
@@ -24,6 +26,12 @@ cv::Mat get_corner_points(const double tag_size) {
 
 }
 
+apriltag::CameraLocalizer::CameraLocalizer(const std::shared_ptr<const AprilTagField>& field,
+                                           const PnPMethod many_tags_method, const PnPMethod one_tag_method)
+    : _field(field), _many_tags_method(many_tags_method), _one_tag_method(one_tag_method) {
+    _detector.add_family(AprilTagFamily::get(field->tag_family()));
+}
+
 const apriltag::AprilTagDetector& apriltag::CameraLocalizer::detector() const {
     return _detector;
 }
@@ -36,7 +44,8 @@ std::shared_ptr<const apriltag::AprilTagField> apriltag::CameraLocalizer::field(
     return _field;
 }
 
-std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::localize(const cv::Mat& image, const CameraInfo& camera_info) const {
+std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::localize(
+    const cv::Mat& image, const CameraInfo& camera_info) const {
     cv::Mat camera_matrix;
     cv::Mat distortion_vector;
     cv::eigen2cv(camera_info.matrix(), camera_matrix);
@@ -61,7 +70,7 @@ std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::loc
     cv::Mat image_points(4 * detected_tags, 2, CV_64F);
     int extraneous = 0;
     for (int i = 0; i < detected_tags; i += 1) {
-        zarray_get(detection_result.get(), i, &detection);  // this performs a copy NOLINT(*-multi-level-implicit-pointer-conversion)
+        zarray_get(detection_result.get(), i, &detection);  // this performs a copy
         if (const AprilTagInfo* info = _field->tag(detection->id); info != nullptr) {
             result.detections.emplace_back(detection, AprilTagFamily::get_existing(detection->family));
             cv::Mat roi;
@@ -73,7 +82,7 @@ std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::loc
             extraneous += 1;
         }
     }
-    const int used_tags = detected_tags - extraneous;
+    const std::size_t used_tags = detected_tags - extraneous;
     if (extraneous > 0) {
         object_points.resize(4 * used_tags);
         image_points.resize(4 * used_tags);
@@ -84,19 +93,51 @@ std::optional<apriltag::CameraLocalizationResult> apriltag::CameraLocalizer::loc
 
     std::vector<Affine3dWithError> candidates;
     if (used_tags == 1) {
-        const AprilTagInfo* tag = _field->tag(result.detections.at(0).id());
-        if (tag == nullptr) {
-            throw std::runtime_error("Tag did not actually exist???");
+        if (_one_tag_method == PnPMethod::IPPE_SQUARE) {
+            const AprilTagInfo* tag = _field->tag(result.detections.at(0).id());
+            if (tag == nullptr) {
+                throw std::runtime_error("Tag did not actually exist???");
+            }
+            object_points = get_corner_points(tag->_size);
+            candidates = solve_pnp(
+                object_points,
+                image_points,
+                camera_matrix,
+                distortion_vector,
+                _one_tag_method
+            );
+            if (candidates.empty()) {
+                return std::nullopt;
+            }
+            result.estimate.pose = candidates.at(0).pose * tag->_pose.inverse();
+            result.estimate.reprojection_error = candidates.at(0).reprojection_error;
+        } else {
+            candidates = solve_pnp(
+                object_points,
+                image_points,
+                camera_matrix,
+                distortion_vector,
+                _one_tag_method
+            );
+            if (candidates.empty()) {
+                return std::nullopt;
+            }
+            result.estimate = *std::min_element(
+                candidates.cbegin(),
+                candidates.cend(),
+                [](const Affine3dWithError& lhs, const Affine3dWithError& rhs) -> bool {
+                    return lhs.reprojection_error < rhs.reprojection_error;
+                }
+            );
         }
-        object_points = get_corner_points(tag->_size);
-        candidates = solve_pnp(object_points, image_points, camera_matrix, distortion_vector, PnPMethod::IPPE_SQUARE);
-        if (candidates.empty()) {
-            return std::nullopt;
-        }
-        result.estimate.pose = candidates.at(0).pose * tag->_pose.inverse();
-        result.estimate.reprojection_error = candidates.at(0).reprojection_error;
     } else {
-        candidates = solve_pnp(object_points, image_points, camera_matrix, distortion_vector, _method);
+        candidates = solve_pnp(
+            object_points,
+            image_points,
+            camera_matrix,
+            distortion_vector,
+            _many_tags_method
+        );
         if (candidates.empty()) {
             return std::nullopt;
         }

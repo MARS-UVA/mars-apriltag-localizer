@@ -8,7 +8,7 @@
 
 #include "localizer.hpp"
 #include "overlays.hpp"
-#include "wrapper.hpp"
+#include "common.hpp"
 
 constexpr apriltag::CameraInfo info {
     apriltag::CameraIntrinsics {
