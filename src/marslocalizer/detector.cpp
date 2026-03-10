@@ -75,7 +75,7 @@ void apriltag::AprilTagDetector::clear_families() {
 }
 
 std::vector<apriltag::AprilTagDetection> apriltag::AprilTagDetector::detect(const cv::Mat& image) const {
-    if (!_families.empty()) {
+    if (_families.empty()) {
         throw std::runtime_error("detect() called with no families added");
     }
     image_u8_t cimage = cv2cimage(image);
