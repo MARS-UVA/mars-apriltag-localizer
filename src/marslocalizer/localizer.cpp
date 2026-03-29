@@ -4,6 +4,7 @@
 
 #include "localizer.hpp"
 
+#include <optional>
 #include <Eigen/Dense>
 #include <Eigen/Geometry>
 #include <opencv2/opencv.hpp>

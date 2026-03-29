@@ -65,10 +65,7 @@ int main(const int argc, const char* argv[]) {
     std::shared_ptr<apriltag::AprilTagField> field = apriltag::AprilTagField::parse(std::move(field_file));
 
     apriltag::CameraLocalizer localizer { field };
-
-    const auto family = apriltag::AprilTagFamily::get(tagStandard41h12_create(), tagStandard41h12_destroy);
     localizer.detector().nthreads() = 8;
-    localizer.detector().add_family(family);
 
     cv::VideoCapture capture {camera_index};
     if (!capture.isOpened()) {

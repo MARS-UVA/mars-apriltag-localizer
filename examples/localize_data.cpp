@@ -9,7 +9,6 @@
 #include "field.hpp"
 #include "localizer.hpp"
 #include "overlays.hpp"
-#include "tagStandard41h12.h"
 
 constexpr apriltag::CameraInfo info {
     apriltag::CameraIntrinsics {
@@ -45,10 +44,7 @@ int main(const int argc, const char* argv[]) {
     std::shared_ptr<apriltag::AprilTagField> field = apriltag::AprilTagField::parse(std::move(field_file));
 
     apriltag::CameraLocalizer localizer { field, apriltag::PnPMethod::SQPNP };
-
-    const auto family = apriltag::AprilTagFamily::get(tagStandard41h12_create(), tagStandard41h12_destroy);
     localizer.detector().nthreads() = 8;
-    localizer.detector().add_family(family);
 
     cv::VideoCapture capture { argv[2] };
     if (!capture.isOpened()) {

@@ -1,0 +1,20 @@
+{
+    "name": "Displaying AprilTag 6 on an iPad",
+    "fiducials": [
+        {
+            "id": 6,
+            "translation": [
+                0,
+                0,
+                0
+            ],
+            "rotation": [
+                0,
+                0,
+                0
+            ],
+            "size": 0.0825
+        }
+    ],
+    "tag_family": "tagStandard41h12"
+}
